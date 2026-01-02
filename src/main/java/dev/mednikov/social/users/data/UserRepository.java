@@ -10,6 +10,8 @@ public interface UserRepository {
 
     Future<Optional<User>> findByAuthId (UUID authId);
 
+    Future<Optional<User>> findById (Long id);
+
     Future<User> createUser (User user);
 
     Future<User> updateUser (User user);

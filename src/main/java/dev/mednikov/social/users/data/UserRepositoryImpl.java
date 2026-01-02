@@ -23,6 +23,12 @@ public final class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public Future<Optional<User>> findById(Long id) {
+        Optional<User> result = this.users.stream().filter(u -> u.getId().equals(id)).findFirst();
+        return Future.succeededFuture(result);
+    }
+
+    @Override
     public Future<User> createUser(User user) {
         Long id = users.size() + 1L;
         user.setId(id);

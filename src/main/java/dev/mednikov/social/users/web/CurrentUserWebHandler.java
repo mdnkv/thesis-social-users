@@ -1,6 +1,7 @@
 package dev.mednikov.social.users.web;
 
 import dev.mednikov.social.users.data.UserRepository;
+import dev.mednikov.social.users.mappers.UserJsonMapper;
 import dev.mednikov.social.users.models.User;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -52,12 +53,9 @@ class CurrentUserWebHandler implements Handler<RoutingContext> {
         }).onComplete(result -> {
             if (result.succeeded()){
                 User user = result.result();
-                JsonObject payload = new JsonObject();
-                payload.put("id", user.getId().toString());
-                payload.put("firstName", user.getFirstName());
-                payload.put("lastName", user.getLastName());
-                payload.put("active", user.getActive());
-                payload.put("avatarUrl", user.getAvatarUrl());
+                UserJsonMapper mapper = new UserJsonMapper();
+                JsonObject payload = mapper.apply(user);
+                payload.put("currentUser", true);
                 context.response().setStatusCode(200).end(payload.encode());
             } else {
                 context.fail(result.cause());

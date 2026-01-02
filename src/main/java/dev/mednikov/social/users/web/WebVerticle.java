@@ -40,6 +40,7 @@ public final class WebVerticle extends AbstractVerticle {
             );
             router.route().handler(OAuth2AuthHandler.create(vertx, authProvider));
             router.get("/users/current").handler(new CurrentUserWebHandler(userRepository));
+            router.get("/users/user/:userId").handler(new UserWebHandler(userRepository));
             server.requestHandler(router);
             return server.listen(config().getInteger("APP_HTTP_PORT", 8000));
         }).onComplete(result -> {
