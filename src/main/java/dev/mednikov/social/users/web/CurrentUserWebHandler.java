@@ -1,8 +1,12 @@
 package dev.mednikov.social.users.web;
 
 import dev.mednikov.social.users.data.UserRepository;
+import dev.mednikov.social.users.mappers.CurrentUserJsonMapper;
 import dev.mednikov.social.users.mappers.UserJsonMapper;
 import dev.mednikov.social.users.models.User;
+import dev.mednikov.social.users.models.UserGender;
+import dev.mednikov.social.users.models.UserRelationshipStatus;
+import dev.mednikov.social.users.utils.UserUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -32,6 +36,7 @@ class CurrentUserWebHandler implements Handler<RoutingContext> {
                 if (checkForUpdate(principal, originalUser)){
                     // update existing user
                     originalUser.setEmail(principal.getString("email"));
+                    originalUser.setAvatarUrl(UserUtils.getGravatarUrl(originalUser.getEmail()));
                     originalUser.setFirstName(principal.getString("given_name"));
                     originalUser.setLastName(principal.getString("family_name"));
                     originalUser.setEmailVerified(principal.getBoolean("email_verified", false));
@@ -46,16 +51,19 @@ class CurrentUserWebHandler implements Handler<RoutingContext> {
                 user.setEmail(principal.getString("email"));
                 user.setFirstName(principal.getString("given_name"));
                 user.setLastName(principal.getString("family_name"));
+                user.setAvatarUrl(UserUtils.getGravatarUrl(principal.getString("email")));
                 user.setEmailVerified(principal.getBoolean("email_verified", false));
                 user.setActive(true);
+                user.setPrivateProfile(false);
+                user.setRelationshipStatus(UserRelationshipStatus.UNKNOWN);
+                user.setGender(UserGender.UNKNOWN);
                 return this.userRepository.createUser(user);
             }
         }).onComplete(result -> {
             if (result.succeeded()){
                 User user = result.result();
-                UserJsonMapper mapper = new UserJsonMapper();
+                UserJsonMapper mapper = new CurrentUserJsonMapper();
                 JsonObject payload = mapper.apply(user);
-                payload.put("currentUser", true);
                 context.response().setStatusCode(200).end(payload.encode());
             } else {
                 context.fail(result.cause());

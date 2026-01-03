@@ -38,7 +38,9 @@ public final class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Future<User> updateUser(User user) {
-        return null;
+        users.removeIf(e -> e.getId().equals(user.getId()));
+        users.add(user);
+        return Future.succeededFuture(user);
     }
 
 }

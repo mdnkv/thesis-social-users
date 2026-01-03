@@ -2,6 +2,8 @@ package dev.mednikov.social.users.web;
 
 import dev.mednikov.social.users.data.UserRepository;
 import dev.mednikov.social.users.exceptions.UserNotInitializedException;
+import dev.mednikov.social.users.mappers.CurrentUserJsonMapper;
+import dev.mednikov.social.users.mappers.ProfileJsonMapper;
 import dev.mednikov.social.users.mappers.UserJsonMapper;
 import dev.mednikov.social.users.models.User;
 import io.vertx.core.Future;
@@ -29,13 +31,9 @@ final class UserWebHandler implements Handler<RoutingContext> {
         Long userId = Long.parseLong(context.pathParam("userId"));
         JsonObject principal = context.user().principal();
         UUID authId = UUID.fromString(principal.getString("sub"));
-        this.userRepository.findByAuthId(authId).compose(result -> {
-            if (result.isPresent()){
-                return Future.succeededFuture(result.get());
-            } else {
-                return Future.failedFuture(new UserNotInitializedException());
-            }
-        }).compose(current -> {
+        this.userRepository.findByAuthId(authId).compose(result ->
+            result.map(Future::succeededFuture).orElseGet(() -> Future.failedFuture(new UserNotInitializedException()))
+        ).compose(current -> {
             boolean isCurrent = current.getId().equals(userId);
             return Future.all(
                     Future.succeededFuture(isCurrent),
@@ -47,9 +45,10 @@ final class UserWebHandler implements Handler<RoutingContext> {
                 Optional<User> userResult = result.result().resultAt(1);
                 if (userResult.isPresent()) {
                     User user = userResult.get();
-                    UserJsonMapper mapper = new UserJsonMapper();
+                    UserJsonMapper mapper = (isCurrent)
+                            ? new CurrentUserJsonMapper()
+                            : new ProfileJsonMapper(user.getPrivateProfile());
                     JsonObject payload = mapper.apply(user);
-                    payload.put("currentUser", isCurrent);
                     context.response().setStatusCode(200).end(payload.encode());
                 } else {
                     context.response().setStatusCode(404).end();

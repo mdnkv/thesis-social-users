@@ -9,6 +9,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.ext.auth.oauth2.OAuth2Options;
 import io.vertx.ext.auth.oauth2.providers.KeycloakAuth;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.OAuth2AuthHandler;
 import org.slf4j.Logger;
@@ -35,12 +36,13 @@ public final class WebVerticle extends AbstractVerticle {
             UserRepository userRepository = new UserRepositoryImpl();
             router.route().handler(CorsHandler.create()
                     .allowCredentials(true)
-                    .allowedMethods(Set.of(HttpMethod.GET, HttpMethod.OPTIONS))
+                    .allowedMethods(Set.of(HttpMethod.GET, HttpMethod.POST, HttpMethod.OPTIONS))
                     .allowedHeaders(Set.of("Authorization", "Content-Type", "Access-Control-Allow-Origin"))
             );
             router.route().handler(OAuth2AuthHandler.create(vertx, authProvider));
             router.get("/users/current").handler(new CurrentUserWebHandler(userRepository));
             router.get("/users/user/:userId").handler(new UserWebHandler(userRepository));
+            router.post("/users/update").handler(BodyHandler.create()).handler(new UpdateUserWebHandler(userRepository));
             server.requestHandler(router);
             return server.listen(config().getInteger("APP_HTTP_PORT", 8000));
         }).onComplete(result -> {

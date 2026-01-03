@@ -1,5 +1,6 @@
 package dev.mednikov.social.users.models;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 public final class User {
@@ -10,8 +11,13 @@ public final class User {
     private String lastName;
     private String email;
     private String avatarUrl;
+    private LocalDate dateOfBirth;
+    private String summary;
+    private UserGender gender;
+    private UserRelationshipStatus relationshipStatus;
     private Boolean emailVerified;
     private Boolean active;
+    private Boolean privateProfile;
 
     public Long getId() {
         return id;
@@ -75,5 +81,45 @@ public final class User {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
+    public UserGender getGender() {
+        return gender;
+    }
+
+    public void setGender(UserGender gender) {
+        this.gender = gender;
+    }
+
+    public UserRelationshipStatus getRelationshipStatus() {
+        return relationshipStatus;
+    }
+
+    public void setRelationshipStatus(UserRelationshipStatus relationshipStatus) {
+        this.relationshipStatus = relationshipStatus;
+    }
+
+    public Boolean getPrivateProfile() {
+        return privateProfile;
+    }
+
+    public void setPrivateProfile(Boolean privateProfile) {
+        this.privateProfile = privateProfile;
     }
 }
